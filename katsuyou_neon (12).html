@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>活用の間</title>
+<link href="https://fonts.googleapis.com/css2?family=Yuji+Syuku&family=Shippori+Mincho+B1:wght@800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Yuji Syuku','Shippori Mincho B1',serif;}
+
+#app{
+  display:flex;align-items:center;justify-content:center;
+  width:100vw;height:100vh;
+  position:relative;overflow:hidden;
+}
+
+/* 背景キャンバス（部屋の間） */
+#bg-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:0;}
+
+/* 垂れ幕 */
+#curtain-left,#curtain-right{
+  position:absolute;top:0;width:clamp(50px,7vw,100px);height:100%;
+  z-index:1;pointer-events:none;
+}
+#curtain-left{left:0;background:linear-gradient(to right,#7a1a10ee,#8b2218cc,#a0302855,transparent);}
+#curtain-right{right:0;background:linear-gradient(to left,#7a1a10ee,#8b2218cc,#a0302855,transparent);}
+.curtain-fringe{position:absolute;bottom:0;width:100%;display:flex;justify-content:space-around;padding:0 4px;}
+.fringe-item{width:5px;height:clamp(20px,3.5vh,36px);background:linear-gradient(to bottom,#d4a843,#8b6914);border-radius:0 0 4px 4px;}
+
+/* メインコンテナ */
+/* レベル選択画面 */
+#level-screen{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  position:relative;z-index:2;
+  width:min(98vw,700px);
+  padding:clamp(16px,3vh,32px) clamp(12px,2vw,24px);
+}
+.level-title{
+  text-align:center;
+  font-size:clamp(40px,8vh,90px);
+  font-weight:900;
+  letter-spacing:.3em;
+  text-indent:.3em;
+  color:#6a0a14;
+  text-shadow:4px 4px 8px #8b1a2a55, 2px 2px 0 #c8a86a88;
+  margin-bottom:8px;
+  background:rgba(255,252,240,0.92);
+  border:3px solid #8b6914;
+  border-left:8px solid #8b1a2a;
+  border-right:8px solid #8b1a2a;
+  padding:8px clamp(16px,3vw,36px);
+  box-shadow:0 0 0 4px #5a3a1088, 4px 4px 16px #00000030;
+  position:relative;
+}
+/* 四隅の装飾 */
+.level-title::before{
+  content:'';
+  position:absolute;top:6px;left:6px;right:6px;bottom:6px;
+  border:1px solid #c8a86a55;
+  pointer-events:none;
+}
+.level-sub{
+  text-align:center;font-size:clamp(12px,1.8vh,16px);
+  color:#9a8060;margin-bottom:clamp(20px,4vh,40px);
+  letter-spacing:.2em;
+}
+.level-cards{
+  display:flex;gap:clamp(12px,2vw,24px);
+  justify-content:center;flex-wrap:wrap;
+  width:100%;
+}
+.level-card{
+  background:rgba(255,252,240,0.97);
+  border:3px solid #8b6914;
+  border-radius:4px;
+  box-shadow:0 0 0 4px #5a3a10, 0 4px 20px #00000040;
+  padding:clamp(16px,3vh,28px) clamp(14px,2.5vw,24px);
+  width:clamp(140px,28vw,200px);
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  cursor:pointer;transition:all .15s;
+}
+.level-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 0 0 4px #5a3a10, 0 8px 28px #00000050;
+  background:rgba(255,248,230,0.99);
+}
+.level-num{
+  font-size:clamp(36px,6vh,64px);font-weight:900;
+  color:#6a0a14;letter-spacing:.1em;
+  text-shadow:2px 2px 0 #c8a86a66;
+  line-height:1;
+}
+.level-name{
+  font-size:clamp(14px,2.2vh,20px);font-weight:900;
+  color:#3a1020;letter-spacing:.15em;
+}
+.level-desc{
+  font-size:clamp(10px,1.4vh,13px);color:#7a5a3a;
+  text-align:center;line-height:1.8;letter-spacing:.05em;
+  border-top:1px solid #d4b87a;border-bottom:1px solid #d4b87a;
+  padding:8px 0;width:100%;
+}
+.level-btn{
+  font-size:clamp(12px,1.6vh,15px);font-weight:900;
+  color:#8b1a2a;letter-spacing:.15em;
+  background:#fff8ee;border:1.5px solid #8b1a2a;
+  border-radius:2px;padding:6px 20px;
+  transition:all .1s;
+}
+.level-card:hover .level-btn{
+  background:#8b1a2a;color:#fff8ee;
+}
+
+#gc{
+  display:flex;flex-direction:column;
+  background:rgba(255,252,240,0.96);
+  border-radius:2px;
+  padding:clamp(6px,1vh,12px) clamp(8px,1.2vw,14px);
+  border:3px solid #8b6914;
+  box-shadow:0 0 0 5px #5a3a10, 0 0 0 8px #c8a86a66, 4px 8px 40px #00000060;
+  width:min(98vw,calc(98vh * 0.88));
+  height:min(98vh,calc(98vw / 0.88));
+  position:relative;z-index:2;
+  overflow:hidden;
+}
+
+/* タイトル */
+h1{
+  text-align:center;
+  font-size:clamp(36px,7.5vh,80px);
+  font-weight:900;letter-spacing:.3em;
+  color:#6a0a14;
+  margin-bottom:0;flex-shrink:0;
+  text-shadow:4px 4px 8px #8b1a2a55, 2px 2px 0 #c8a86a88;
+  line-height:1.05;
+  padding-bottom:4px;
+  border-bottom:2px solid #c8a86a66;
+}
+.sub{text-align:center;font-size:clamp(13px,1.8vh,17px);color:#9a8060;margin-bottom:clamp(2px,0.5vh,6px);margin-top:4px;flex-shrink:0;letter-spacing:.25em;}
+
+/* 助動詞情報 */
+#joshi-info{
+  background:#fffbf0;border:1px solid #d4b87a;border-radius:2px;
+  padding:clamp(4px,0.6vh,8px) clamp(8px,1vw,14px);
+  margin-bottom:clamp(3px,0.5vh,6px);
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0;
+  border-left:4px solid #8b1a2a;
+}
+.ji-label{font-size:clamp(12px,1.5vh,15px);color:#9a8060;letter-spacing:.1em;}
+.ji-name{font-size:clamp(24px,4vh,44px);font-weight:900;color:#3a1020;letter-spacing:.15em;}
+.ji-tag{font-size:clamp(12px,1.6vh,16px);padding:3px 12px;border-radius:2px;font-weight:700;}
+.ji-imi{background:#fdf0f0;color:#8b1a2a;border:1px solid #d4a0a0;}
+.ji-sets{background:#f0f4f0;color:#2a5a2a;border:1px solid #a0c0a0;}
+
+/* スコア行 */
+#score-row{display:flex;gap:5px;margin-bottom:clamp(3px,0.5vh,6px);align-items:center;flex-shrink:0;}
+.sbox{background:#fffbf0;border:1px solid #d4b87a;border-radius:2px;padding:3px 10px;font-size:clamp(13px,1.8vh,18px);font-weight:900;letter-spacing:.08em;color:#5a3a1a;}
+#score-d{color:#8b1a2a;font-size:clamp(14px,2.2vh,22px);flex:1;text-align:center;}
+#progress-d{color:#7a6a4a;flex:1;text-align:center;font-weight:700;}
+#kata-d{color:#5a3a1a;}
+
+/* メッセージ */
+#msg{text-align:center;font-size:clamp(13px,1.8vh,18px);min-height:clamp(20px,2.8vh,28px);color:#7a5a3a;margin-bottom:clamp(3px,0.5vh,6px);background:#fffbf0;border-radius:2px;padding:5px 10px;border:1px solid #d4b87a;flex-shrink:0;letter-spacing:.05em;}
+
+/* 列ヘッダー */
+#col-headers{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;margin-bottom:3px;flex-shrink:0;}
+.ch{text-align:center;font-size:clamp(12px,1.5vh,16px);font-weight:900;padding:clamp(4px,0.6vh,7px) 1px;border-radius:2px;letter-spacing:.05em;background:#fffbf0;color:#5a3a1a;border:1px solid #d4b87a;}
+
+/* キャンバス（畳） */
+#canvas-wrap{
+  position:relative;border-radius:2px;overflow:hidden;
+  border:2px solid #8b6914;
+  flex:1;min-height:0;
+  box-shadow:inset 0 0 12px #00000020;
+}
+canvas{display:block;width:100%;height:100%;}
+
+/* ボタン */
+#ctrl{display:flex;gap:8px;justify-content:center;margin-top:clamp(5px,0.8vh,10px);flex-shrink:0;}
+.cbtn{
+  height:clamp(44px,6.5vh,64px);min-width:clamp(44px,6.5vh,64px);padding:0 10px;
+  border-radius:2px;border:2px solid #c8a86a;
+  background:#fffbf0;color:#3a1020;
+  font-family:'Yuji Syuku','Shippori Mincho B1',serif;
+  font-size:clamp(16px,2.8vh,28px);font-weight:900;
+  cursor:pointer;transition:all .08s;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 3px 0 #c8a86a;user-select:none;
+}
+.cbtn:hover{background:#fdf0e0;}
+.cbtn:active{transform:translateY(3px);box-shadow:none;}
+#drop-btn{color:#8b1a2a;border-color:#8b1a2a;box-shadow:0 3px 0 #8b1a2a;padding:0 clamp(12px,2vw,24px);min-width:clamp(110px,20vw,180px);font-size:clamp(15px,2.2vh,20px);}
+.hint-txt{text-align:center;font-size:clamp(11px,1.4vh,14px);color:#b0a080;margin-top:4px;flex-shrink:0;letter-spacing:.1em;}
+
+/* オーバーレイ */
+#overlay{
+  display:none;
+  position:absolute;
+  inset:0;
+  background:rgba(255,248,235,0.97);
+  align-items:center;justify-content:center;
+  flex-direction:column;gap:clamp(6px,1.5vh,14px);
+  z-index:20;text-align:center;
+  border-radius:2px;
+  padding:clamp(16px,3vh,28px) clamp(12px,2vw,20px);
+  box-sizing:border-box;
+  border:3px solid #8b6914;
+  box-shadow:inset 0 0 40px #c8a86a22;
+  overflow:hidden;
+}
+#overlay.show{display:flex;}
+.ov-t{font-size:clamp(26px,4.5vh,42px);font-weight:900;color:#1a0000;letter-spacing:.2em;-webkit-text-stroke:1px #6a0a14;}
+.ov-s{font-size:clamp(15px,2.2vh,20px);color:#7a5a3a;line-height:1.8;white-space:pre-line;}
+.ov-sc{font-size:clamp(17px,2.6vh,24px);font-weight:900;color:#8b1a2a;}
+.ov-btn{padding:10px 28px;border-radius:2px;border:2px solid #8b1a2a;background:#fffbf0;color:#8b1a2a;font-family:'Yuji Syuku',serif;font-size:clamp(16px,2.4vh,22px);cursor:pointer;font-weight:900;letter-spacing:.15em;}
+.ov-btn:hover{background:#fdf0e0;}
+
+/* クリア演出 */
+#clear-flash{display:none;position:absolute;inset:0;background:#fffcf5f5;align-items:center;justify-content:center;flex-direction:column;gap:10px;z-index:30;border-radius:2px;text-align:center;}
+#clear-flash.show{display:flex;}
+.cf-t{font-size:clamp(26px,4.5vh,42px);font-weight:900;color:#5a1a2a;letter-spacing:.2em;}
+.cf-s{font-size:clamp(15px,2vh,20px);color:#9a7a4a;letter-spacing:.12em;}
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="bg-canvas"></canvas>
+  <div id="curtain-left"><div class="curtain-fringe"><div class="fringe-item"></div><div class="fringe-item"></div><div class="fringe-item"></div><div class="fringe-item"></div></div></div>
+  <div id="curtain-right"><div class="curtain-fringe"><div class="fringe-item"></div><div class="fringe-item"></div><div class="fringe-item"></div><div class="fringe-item"></div></div></div>
+
+  <!-- 遊び方画面 -->
+  <div id="howto-screen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;z-index:2;width:min(98vw,560px);max-height:96vh;padding:clamp(6px,1vh,12px) clamp(8px,1.2vw,16px);overflow:hidden;">
+    <div style="background:rgba(255,252,240,0.97);border:3px solid #8b6914;border-left:8px solid #8b1a2a;border-right:8px solid #8b1a2a;box-shadow:0 0 0 4px #5a3a1088,4px 4px 16px #00000030;border-radius:2px;padding:clamp(8px,1.2vh,14px) clamp(10px,1.5vw,16px);width:100%;display:flex;flex-direction:column;justify-content:center;gap:clamp(6px,1vh,12px);position:relative;">
+      <div style="content:'';position:absolute;top:6px;left:6px;right:6px;bottom:6px;border:1px solid #c8a86a55;pointer-events:none;"></div>
+      <h2 style="text-align:center;font-size:clamp(20px,3.5vh,36px);font-weight:900;color:#6a0a14;letter-spacing:.2em;margin:0;font-family:'Yuji Syuku',serif;flex-shrink:0;">遊　び　方</h2>
+
+      <div style="display:flex;flex-direction:column;gap:clamp(4px,0.7vh,8px);flex:1;justify-content:center;">
+        <div style="background:#fff8ee;border:1px solid #d4b87a;border-radius:4px;padding:clamp(4px,0.7vh,8px) clamp(8px,1.2vw,12px);">
+          <div style="font-size:clamp(11px,1.5vh,14px);font-weight:900;color:#8b1a2a;margin-bottom:3px;font-family:'Yuji Syuku',serif;">🎮 基本ルール</div>
+          <div style="font-size:clamp(10px,1.3vh,13px);color:#3a1020;line-height:1.7;font-family:'Yuji Syuku',serif;">
+            ・上から活用形のブロックが落ちてくる<br>
+            ・← → で移動して正しい列に落とす<br>
+            ・6マス全部揃ったら行が消える！<br>
+            ・10種類の助動詞をクリアで皆伝！
+          </div>
+        </div>
+        <div style="background:#fff8ee;border:1px solid #d4b87a;border-radius:4px;padding:clamp(4px,0.7vh,8px) clamp(8px,1.2vw,12px);">
+          <div style="font-size:clamp(11px,1.5vh,14px);font-weight:900;color:#8b1a2a;margin-bottom:3px;font-family:'Yuji Syuku',serif;">⚠️ ミスしたら</div>
+          <div style="font-size:clamp(10px,1.3vh,13px);color:#3a1020;line-height:1.7;font-family:'Yuji Syuku',serif;">
+            ・その行が全部石になる<br>
+            ・石が天井に達したらゲームオーバー
+          </div>
+        </div>
+        <div style="background:#e8f5e0;border:1px solid #4a8a2a;border-radius:4px;padding:clamp(4px,0.7vh,8px) clamp(8px,1.2vw,12px);">
+          <div style="font-size:clamp(11px,1.5vh,14px);font-weight:900;color:#2a5a10;margin-bottom:3px;font-family:'Yuji Syuku',serif;">✨ コンボ</div>
+          <div style="font-size:clamp(10px,1.3vh,13px);color:#1a3a08;line-height:1.7;font-family:'Yuji Syuku',serif;">
+            ・2連続クリアで石が1行消える！<br>
+            ・ピンチのときに逆転のチャンス！
+          </div>
+        </div>
+        <div style="background:#fff8ee;border:1px solid #d4b87a;border-radius:4px;padding:clamp(4px,0.7vh,8px) clamp(8px,1.2vw,12px);">
+          <div style="font-size:clamp(11px,1.5vh,14px);font-weight:900;color:#8b1a2a;margin-bottom:3px;font-family:'Yuji Syuku',serif;">🕹️ 操作方法</div>
+          <div style="font-size:clamp(10px,1.3vh,13px);color:#3a1020;line-height:1.7;font-family:'Yuji Syuku',serif;">
+            ・← → キー（またはボタン）で移動<br>
+            ・スペースキー（または「落とす」）で即落下<br>
+            ・↓ キーで加速
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:center;align-items:center;gap:16px;flex-shrink:0;">
+        <button onclick="document.getElementById('howto-screen').style.display='none';document.getElementById('level-screen').style.display='flex';" style="padding:clamp(7px,1.2vh,12px) clamp(20px,3vw,32px);border-radius:2px;border:2px solid #8b1a2a;background:#8b1a2a;color:#fff8ee;font-family:'Yuji Syuku',serif;font-size:clamp(13px,1.8vh,17px);cursor:pointer;font-weight:900;letter-spacing:.15em;">レベルを選ぶ →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- レベル選択画面 -->
+  <div id="level-screen" style="display:none;">
+    <h1 class="level-title">活用の間</h1>
+    <div class="level-sub">古文助動詞　活用形パズル</div>
+    <div style="margin-bottom:clamp(8px,1.5vh,14px);">
+      <button onclick="document.getElementById('level-screen').style.display='none';document.getElementById('howto-screen').style.display='flex';" style="padding:6px 18px;border-radius:2px;border:1px solid #c8a86a;background:#fff8ee;color:#8b6914;font-family:'Yuji Syuku',serif;font-size:clamp(11px,1.4vh,14px);cursor:pointer;font-weight:700;letter-spacing:.1em;">← 遊び方に戻る</button>
+    </div>
+    <div class="level-cards">
+      <div class="level-card" onclick="selectLevel(1)">
+        <div class="level-num">初</div>
+        <div class="level-name">初級</div>
+        <div class="level-btn">始める</div>
+      </div>
+      <div class="level-card" onclick="selectLevel(2)">
+        <div class="level-num">中</div>
+        <div class="level-name">中級</div>
+        <div class="level-btn">始める</div>
+      </div>
+      <div class="level-card" onclick="selectLevel(3)">
+        <div class="level-num">上</div>
+        <div class="level-name">上級</div>
+        <div class="level-btn">始める</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="gc" style="display:none;">
+    <h1>活用の間</h1>
+    <div class="sub">古文助動詞　活用形パズル</div>
+    <div id="joshi-info">
+      <span class="ji-label">助動詞</span>
+      <span class="ji-name" id="ji-name">—</span>
+      <span class="ji-tag ji-imi" id="ji-imi">—</span>
+      <span class="ji-tag ji-sets" id="ji-sets">—</span>
+    </div>
+    <div id="score-row">
+      <div class="sbox" id="score-d">得点　〇</div>
+      <div class="sbox" id="progress-d" style="display:none;">—</div>
+      <div class="sbox" id="kata-d" style="display:none;">—</div>
+    </div>
+    <div id="msg">始まりを待て…</div>
+    <div id="col-headers">
+      <div class="ch">未然形</div><div class="ch">連用形</div>
+      <div class="ch">終止形</div><div class="ch">連体形</div>
+      <div class="ch">已然形</div><div class="ch">命令形</div>
+    </div>
+    <div id="canvas-wrap">
+      <canvas id="cv"></canvas>
+      <div id="kata-announce" style="display:none;position:absolute;inset:0;background:rgba(255,248,235,0.97);align-items:center;justify-content:center;flex-direction:column;gap:clamp(8px,1.5vh,16px);z-index:15;border-radius:2px;padding:16px;">
+        <div id="ann-name" style="font-size:clamp(40px,8vh,80px);font-weight:900;color:#6a0a14;letter-spacing:.2em;font-family:'Yuji Syuku',serif;text-shadow:3px 3px 0 #c8a86a88;"></div>
+        <div id="ann-imi" style="font-size:clamp(13px,2vh,18px);color:#8b1a2a;font-family:'Yuji Syuku',serif;letter-spacing:.1em;"></div>
+        <div id="ann-sets" style="font-size:clamp(11px,1.6vh,15px);color:#7a5a3a;font-family:'Yuji Syuku',serif;letter-spacing:.08em;border:1px solid #c8a86a;padding:4px 12px;border-radius:2px;"></div>
+        <!-- クイズエリア（中級・上級のみ表示） -->
+        <div id="quiz-area" style="display:none;width:100%;max-width:340px;margin-top:4px;">
+          <div id="quiz-question" style="font-size:clamp(11px,1.5vh,14px);color:#5a3a1a;font-family:'Yuji Syuku',serif;text-align:center;margin-bottom:8px;font-weight:700;letter-spacing:.05em;"></div>
+          <div id="quiz-choices" style="display:flex;flex-direction:column;gap:6px;"></div>
+          <div id="quiz-result" style="display:none;font-size:clamp(11px,1.5vh,14px);font-family:'Yuji Syuku',serif;text-align:center;padding:6px;border-radius:4px;margin-top:6px;font-weight:700;"></div>
+      <!-- 正解ドーン演出 -->
+      <div id="quiz-correct-flash" style="display:none;position:absolute;inset:0;background:rgba(232,245,224,0.97);align-items:center;justify-content:center;flex-direction:column;gap:10px;border-radius:2px;z-index:20;">
+        <div style="font-size:clamp(50px,10vh,100px);font-weight:900;color:#2a5a10;font-family:'Yuji Syuku',serif;letter-spacing:.1em;text-shadow:3px 3px 0 #a5d6a755;">正解！</div>
+        <div style="font-size:clamp(18px,3vh,28px);font-weight:900;color:#4a8a2a;font-family:'Yuji Syuku',serif;letter-spacing:.1em;">＋二十点</div>
+      </div>
+      <!-- 不正解ドーン演出 -->
+      <div id="quiz-wrong-flash" style="display:none;position:absolute;inset:0;background:rgba(253,232,224,0.97);align-items:center;justify-content:center;flex-direction:column;gap:10px;border-radius:2px;z-index:20;">
+        <div style="font-size:clamp(50px,10vh,100px);font-weight:900;color:#8b1a2a;font-family:'Yuji Syuku',serif;letter-spacing:.1em;text-shadow:3px 3px 0 #f0a0a055;">不正解</div>
+        <div id="quiz-wrong-answer" style="font-size:clamp(14px,2.2vh,22px);font-weight:900;color:#701818;font-family:'Yuji Syuku',serif;letter-spacing:.08em;"></div>
+      </div>
+        </div>
+      </div>
+      <div id="clear-flash">
+        <div class="cf-t" id="cf-t">習得</div>
+        <div class="cf-s" id="cf-s">—</div>
+      </div>
+    </div>
+    <div id="ctrl">
+      <button class="cbtn" onclick="moveL()">←</button>
+      <button class="cbtn" id="drop-btn" onclick="hardDrop()">落とす</button>
+      <button class="cbtn" onclick="moveR()">→</button>
+    </div>
+    <div class="hint-txt">← → で移動　空白キーで即落下　↓ で加速</div>
+    <div id="overlay">
+      <div class="ov-t" id="ov-t">—</div>
+      <div class="ov-s" id="ov-s">—</div>
+      <div class="ov-sc" id="ov-sc">—</div>
+      <button class="ov-btn" id="ov-btn">もう一度</button>
+      <button class="ov-btn" id="ov-back" onclick="goToLevelSelect()" style="display:none;margin-top:6px;color:#5a3a1a;border-color:#c8a86a;background:#fffbf0;padding:6px 20px;font-size:clamp(12px,1.6vh,16px);">レベル選択へ</button>
+    </div>
+    <div style="text-align:center;margin-top:4px;flex-shrink:0;">
+      <button onclick="goToLevelSelect()" style="font-family:'Yuji Syuku',serif;font-size:clamp(9px,1vh,11px);color:#9a8060;background:none;border:none;cursor:pointer;letter-spacing:.05em;text-decoration:underline;">レベル選択に戻る</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const KATAS = [
+  {name:"き",      imi:"過去（直接体験）",      sets:"連用形接続",           correct:["せ",null,"き","し","しか",null]},
+  {name:"けり",    imi:"過去・詠嘆",            sets:"連用形接続",           correct:[null,"けり","けり","ける","けれ",null]},
+  {name:"つ",      imi:"完了・強意",            sets:"連用形接続",           correct:["て","て","つ","つる","つれ","てよ"]},
+  {name:"ぬ",      imi:"完了・強意",            sets:"連用形接続",           correct:["な","に","ぬ","ぬる","ぬれ","ね"]},
+  {name:"たり",    imi:"完了・存続",            sets:"連用形接続",           correct:["たら","たり","たり","たる","たれ","たれ"]},
+  {name:"り",      imi:"完了・存続",            sets:"サ変未然・四段已然",   correct:["ら","り","り","る","れ","れ"]},
+  {name:"ず",      imi:"打消",                  sets:"未然形接続",           correct:["ず","ず","ず","ぬ","ね",null]},
+  {name:"む",      imi:"推量・意志・勧誘",      sets:"未然形接続",           correct:[null,null,"む","む","め",null]},
+  {name:"むず",    imi:"推量・意志",            sets:"未然形接続",           correct:[null,null,"むず","むずる","むずれ",null]},
+  {name:"らむ",    imi:"現在推量・原因推量",    sets:"終止形接続",           correct:[null,null,"らむ","らむ","らめ",null]},
+  {name:"けむ",    imi:"過去推量",              sets:"連用形接続",           correct:[null,null,"けむ","けむ","けめ",null]},
+  {name:"まし",    imi:"反実仮想",              sets:"未然形接続",           correct:["ませ",null,"まし","まし","ましか",null]},
+  {name:"らし",    imi:"推定",                  sets:"終止形接続",           correct:[null,null,"らし","らし","らし",null]},
+  {name:"べし",    imi:"推量・当然・命令",      sets:"終止形接続",           correct:[null,null,"べし","べき","べけれ",null]},
+  {name:"まじ",    imi:"打消推量・不適当",      sets:"終止形接続",           correct:[null,null,"まじ","まじき","まじけれ",null]},
+  {name:"じ",      imi:"打消意志・打消推量",    sets:"未然形接続",           correct:[null,null,"じ","じ",null,null]},
+  {name:"る",      imi:"受身・尊敬・自発・可能",sets:"未然形接続",           correct:["れ","れ","る","るる","るれ","れよ"]},
+  {name:"らる",    imi:"受身・尊敬・自発・可能",sets:"未然形接続",           correct:["られ","られ","らる","らるる","らるれ","られよ"]},
+  {name:"す",      imi:"使役・尊敬",            sets:"未然形接続",           correct:["せ","せ","す","する","すれ","せよ"]},
+  {name:"さす",    imi:"使役・尊敬",            sets:"未然形接続",           correct:["させ","させ","さす","さする","さすれ","させよ"]},
+  {name:"しむ",    imi:"使役・尊敬",            sets:"未然形接続",           correct:["しめ","しめ","しむ","しむる","しむれ","しめよ"]},
+  {name:"なり",imi:"断定・存在",        sets:"体言・連体形接続",     correct:["なら","なり","なり","なる","なれ","なれ"]},
+  {name:"なり",imi:"伝聞・推定",        sets:"終止形接続",           correct:[null,"なり","なり","なる","なれ",null]},
+  {name:"たり",imi:"断定",              sets:"体言接続",             correct:["たら","たり","たり","たる","たれ","たれ"]},
+  {name:"ごとし",  imi:"比況・例示",            sets:"連体形・体言＋の接続", correct:[null,null,"ごとし","ごとき",null,null]},
+];
+
+const COL_COLORS=[
+  {bg:"#e8e0f0",border:"#7a50a0",text:"#4a1a70"},
+  {bg:"#e0ecf8",border:"#3a70b0",text:"#1a3870"},
+  {bg:"#ddf0e0",border:"#3a8050",text:"#1a4828"},
+  {bg:"#f8f0d8",border:"#b09020",text:"#604800"},
+  {bg:"#f8e0dc",border:"#c04030",text:"#701818"},
+  {bg:"#f0f0e0",border:"#707050",text:"#383820"},
+];
+const COL_NAMES=["未然形","連用形","終止形","連体形","已然形","命令形"];
+const STONE_C={bg:"#c8c0a8",border:"#9a9078",text:"#1a1a14"};
+
+const COLS=6, ROWS=5;
+let CW, CHC;
+const cv=document.getElementById('cv');
+const ctx=cv.getContext('2d');
+
+let currentLevel=1;
+let score=0, gameRunning=false;
+let board=[];
+let piece=null;
+let queue=[];
+let currentRow=ROWS-1;
+let currentKataIdx=0;
+let kataOrder=[];
+let clearedPieces=0, totalPieces=10;
+let fallTimer=null;
+const FALL_SPEEDS={1:2200,2:2200,3:1500};
+let FALL_SPD=1200;
+
+// ===== 背景 =====
+const bgCv=document.getElementById('bg-canvas');
+const bgCtx=bgCv.getContext('2d');
+
+function drawBg(){
+  bgCv.width=window.innerWidth; bgCv.height=window.innerHeight;
+  const g=bgCtx,W=bgCv.width,H=bgCv.height;
+  const wall=g.createLinearGradient(0,0,0,H);
+  wall.addColorStop(0,'#ede0c4'); wall.addColorStop(1,'#ccc0a0');
+  g.fillStyle=wall; g.fillRect(0,0,W,H);
+  g.globalAlpha=0.04;
+  for(let i=0;i<600;i++){
+    g.fillStyle=Math.random()>0.5?'#000':'#fff';
+    g.fillRect(Math.random()*W,Math.random()*H,Math.random()*3,Math.random()*3);
+  }
+  g.globalAlpha=1;
+  const ceilH=H*0.08;
+  const cg=g.createLinearGradient(0,0,0,ceilH);
+  cg.addColorStop(0,'#a08050'); cg.addColorStop(1,'#c8a870');
+  g.fillStyle=cg; g.fillRect(0,0,W,ceilH);
+  g.strokeStyle='#8a6830'; g.lineWidth=0.7;
+  for(let i=0;i<14;i++){
+    const y=ceilH*(0.1+i*0.07);
+    g.beginPath(); g.moveTo(0,y);
+    g.bezierCurveTo(W*0.3,y+ceilH*0.015,W*0.7,y-ceilH*0.01,W,y);
+    g.stroke();
+  }
+  g.strokeStyle='#6a4818'; g.lineWidth=4;
+  g.beginPath(); g.moveTo(0,ceilH); g.lineTo(W,ceilH); g.stroke();
+  const pilW=W*0.055;
+  drawPillar(g,0,ceilH,pilW,H-ceilH);
+  drawPillar(g,W-pilW,ceilH,pilW,H-ceilH);
+  const shojiW=W*0.15,shojiH=H*0.65;
+  drawShoji(g,pilW,ceilH,shojiW,shojiH);
+  drawShoji(g,W-pilW-shojiW,ceilH,shojiW,shojiH);
+  const floorY=H*0.78,floorH=H*0.22;
+  drawTatamiBg(g,0,floorY,W,floorH);
+  const heriH=floorH*0.07;
+  g.fillStyle='#1e1208'; g.fillRect(0,floorY,W,heriH);
+  g.fillRect(0,floorY+floorH-heriH,W,heriH);
+  drawAndon(g,pilW+shojiW+W*0.02,floorY-H*0.15,H*0.14);
+  drawAndon(g,W-pilW-shojiW-W*0.02-H*0.06,floorY-H*0.15,H*0.14);
+  const shadow=g.createRadialGradient(W/2,H*0.5,H*0.1,W/2,H*0.5,H*0.7);
+  shadow.addColorStop(0,'rgba(0,0,0,0)'); shadow.addColorStop(1,'rgba(0,0,0,0.18)');
+  g.fillStyle=shadow; g.fillRect(0,0,W,H);
+}
+
+function drawTatamiBg(g,x,y,w,h){
+  const tg=g.createLinearGradient(x,y,x,y+h);
+  tg.addColorStop(0,'#6a8a55'); tg.addColorStop(1,'#3e5a30');
+  g.fillStyle=tg; g.fillRect(x,y,w,h);
+  const cols=4,rows=2,tw=w/cols,th=h/rows;
+  for(let row=0;row<rows;row++){
+    for(let col=0;col<cols;col++){
+      const tx=x+col*tw,ty=y+row*th;
+      const bright=(col+row)%2===0?1.05:0.95;
+      g.fillStyle=`rgba(${Math.round(90*bright)},${Math.round(130*bright)},${Math.round(70*bright)},0.3)`;
+      g.fillRect(tx,ty,tw,th);
+      g.strokeStyle='rgba(50,80,30,0.35)'; g.lineWidth=0.6;
+      const lineStep=Math.max(3,th/18);
+      for(let ly=ty;ly<ty+th;ly+=lineStep){g.beginPath();g.moveTo(tx+1,ly);g.lineTo(tx+tw-1,ly);g.stroke();}
+    }
+  }
+  g.strokeStyle='#2a3a18'; g.lineWidth=2.5;
+  for(let i=1;i<cols;i++){g.beginPath();g.moveTo(x+w*i/cols,y);g.lineTo(x+w*i/cols,y+h);g.stroke();}
+  for(let i=1;i<rows;i++){g.beginPath();g.moveTo(x,y+h*i/rows);g.lineTo(x+w,y+h*i/rows);g.stroke();}
+}
+
+function drawPillar(g,x,y,w,h){
+  const pg=g.createLinearGradient(x,0,x+w,0);
+  pg.addColorStop(0,'#5a3a18'); pg.addColorStop(0.5,'#a07840'); pg.addColorStop(1,'#4a2e14');
+  g.fillStyle=pg; g.fillRect(x,y,w,h);
+  g.strokeStyle='rgba(40,20,8,0.3)'; g.lineWidth=0.8;
+  for(let i=0;i<16;i++){
+    const ly=y+h*i/16;
+    g.beginPath(); g.moveTo(x+2,ly);
+    g.bezierCurveTo(x+w*0.3,ly+h*0.015,x+w*0.7,ly-h*0.01,x+w-2,ly+h*0.008);
+    g.stroke();
+  }
+  g.strokeStyle='#2a1808'; g.lineWidth=2; g.strokeRect(x,y,w,h);
+}
+
+function drawShoji(g,x,y,w,h){
+  const sg=g.createLinearGradient(x,y,x+w,y+h);
+  sg.addColorStop(0,'rgba(255,252,235,0.88)'); sg.addColorStop(1,'rgba(240,235,215,0.82)');
+  g.fillStyle=sg; g.fillRect(x,y,w,h);
+  g.strokeStyle='rgba(160,130,60,0.7)'; g.lineWidth=1.2;
+  const vN=3,hN=12;
+  for(let i=0;i<=vN;i++){g.beginPath();g.moveTo(x+w*i/vN,y);g.lineTo(x+w*i/vN,y+h);g.stroke();}
+  for(let i=0;i<=hN;i++){g.beginPath();g.moveTo(x,y+h*i/hN);g.lineTo(x+w,y+h*i/hN);g.stroke();}
+  g.strokeStyle='#7a5220'; g.lineWidth=2.5; g.strokeRect(x,y,w,h);
+}
+
+function drawAndon(g,x,y,size){
+  const cx=x+size*0.3,bw=size*0.6,bh=size*0.7;
+  g.fillStyle='#5a3a18';
+  g.fillRect(cx-bw*0.1,y+bh,bw*0.8,size*0.12);
+  g.fillRect(cx-bw*0.05,y+bh+size*0.08,bw*0.1,size*0.15);
+  const ag=g.createLinearGradient(cx,y,cx+bw,y+bh);
+  ag.addColorStop(0,'rgba(255,240,180,0.9)'); ag.addColorStop(1,'rgba(220,180,80,0.8)');
+  g.fillStyle=ag;
+  g.beginPath(); g.moveTo(cx+bw*0.1,y); g.lineTo(cx+bw*0.9,y);
+  g.lineTo(cx+bw,y+bh); g.lineTo(cx,y+bh); g.closePath(); g.fill();
+  g.strokeStyle='rgba(100,60,10,0.5)'; g.lineWidth=0.8;
+  for(let i=1;i<4;i++){g.beginPath();g.moveTo(cx,y+bh*i/4);g.lineTo(cx+bw,y+bh*i/4);g.stroke();}
+  g.strokeStyle='#5a3a18'; g.lineWidth=1.5;
+  g.beginPath(); g.moveTo(cx+bw*0.1,y); g.lineTo(cx+bw*0.9,y);
+  g.lineTo(cx+bw,y+bh); g.lineTo(cx,y+bh); g.closePath(); g.stroke();
+  const glow=g.createRadialGradient(cx+bw*0.5,y+bh*0.5,0,cx+bw*0.5,y+bh*0.5,size*0.5);
+  glow.addColorStop(0,'rgba(255,200,50,0.15)'); glow.addColorStop(1,'rgba(255,200,50,0)');
+  g.fillStyle=glow; g.fillRect(cx-size*0.3,y-size*0.2,bw+size*0.6,bh+size*0.4);
+}
+
+function resize(){
+  const wrap=document.getElementById('canvas-wrap');
+  cv.width=wrap.clientWidth; cv.height=wrap.clientHeight;
+  CW=Math.floor(cv.width/COLS); CHC=Math.floor(cv.height/ROWS);
+}
+
+function selectLevel(lv){
+  currentLevel=lv;
+  document.getElementById('level-screen').style.display='none';
+  document.getElementById('gc').style.display='flex';
+  // 初級：意味・接続両方表示、中級：接続のみ表示、上級：両方非表示
+  document.getElementById('ji-imi').style.display=lv===1?'inline-block':'none';
+  document.getElementById('ji-sets').style.display=lv<=2?'inline-block':'none';
+  startGame();
+}
+
+function goToLevelSelect(){
+  gameRunning=false; clearTimeout(fallTimer);
+  document.getElementById('gc').style.display='none';
+  document.getElementById('howto-screen').style.display='flex';
+  document.getElementById('level-screen').style.display='none';
+  document.getElementById('overlay').classList.remove('show');
+}
+
+function startGame(){
+  FALL_SPD=FALL_SPEEDS[currentLevel]||1200;
+  score=0; gameRunning=true;
+  clearTimeout(fallTimer);
+  document.getElementById('overlay').classList.remove('show');
+  hideTopUI(false);
+  document.getElementById('ji-imi').style.display=currentLevel!==2?'inline-block':'none';
+  document.getElementById('ji-sets').style.display=currentLevel!==3?'inline-block':'none';
+  // 盤面初期化
+  board=Array.from({length:ROWS},()=>Array(COLS).fill(null));
+  piece=null;
+  currentRow=ROWS-1;
+  currentKataIdx=0;
+  currentRowKataIdx=-1;
+  clearedPieces=0;
+  clearedKatas=0;
+  comboCount=0;
+  totalPieces=10;
+  // 10種類の助動詞をランダムで選んでキューに積む
+  const kiOrder=[...Array(KATAS.length).keys()];
+  shuffle(kiOrder);
+  const selected=kiOrder.slice(0,10);
+  queue=[];
+  for(let i=0;i<selected.length;i++){
+    const ki=selected[i];
+    const k=KATAS[ki];
+    const row=[];
+    for(let c=0;c<6;c++){
+      if(k.correct[c]!==null) row.push({text:k.correct[c],correctCol:c,kataIdx:ki,isDash:false});
+      else row.push({text:'○',correctCol:c,kataIdx:ki,isDash:true});
+    }
+    shuffle(row); // 1行分をシャッフル
+    queue.push(...row);
+  }
+  totalKatas=10;
+  clearedKatas=0;
+  totalPieces=queue.length;
+  updateScoreUI();
+  updateQuestionUI();
+  loadRow();
+  requestAnimationFrame(drawLoop);
+}
+
+function buildAllPieces(){
+  const all=[];
+  KATAS.forEach((k,ki)=>{
+    k.correct.forEach((v,c)=>{
+      if(v!==null) all.push({text:v,correctCol:c,kataIdx:ki,isDash:false});
+      else all.push({text:'○',correctCol:c,kataIdx:ki,isDash:true});
+    });
+  });
+  return all;
+}
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
+
+function updateScoreUI(){document.getElementById('score-d').textContent='得点　'+score+'　'+clearedKatas+'/10';}
+function updateQuestionUI(){document.getElementById('score-d').textContent='得点　'+score+'　'+clearedKatas+'/10';}
+
+// ===== 行ロード =====
+function loadRow(){
+  if(!queue.length){ doAllClear(); return; }
+  setTimeout(spawnNext,300);
+}
+
+function showAnnounce(k, callback){
+  const ann=document.getElementById('kata-announce');
+  document.getElementById('ann-name').textContent=k.name;
+  // 初級：意味・接続両方、中級：接続のみ、上級：両方非表示
+  document.getElementById('ann-imi').textContent=currentLevel!==2?k.imi:'';
+  document.getElementById('ann-imi').style.display=currentLevel!==2?'block':'none';
+  document.getElementById('ann-sets').textContent=currentLevel!==3?k.sets:'';
+  document.getElementById('ann-sets').style.display=currentLevel!==3?'block':'none';
+  ann.style.display='flex';
+
+  const quizArea=document.getElementById('quiz-area');
+  const quizResult=document.getElementById('quiz-result');
+  quizResult.style.display='none';
+
+  if(currentLevel===1){
+    // 初級：クイズなし、1.8秒で自動的に進む
+    quizArea.style.display='none';
+    document.getElementById('ann-imi').style.display='block';
+    document.getElementById('ann-sets').style.display='block';
+    setTimeout(()=>{ ann.style.display='none'; callback(); },1800);
+  } else {
+    // 中級・上級：クイズあり（意味・接続は隠す）
+    document.getElementById('ann-imi').style.display='none';
+    document.getElementById('ann-sets').style.display='none';
+    quizArea.style.display='block';
+    const isUpper=(currentLevel===3);
+    // 問題文
+    const q=isUpper?'接続は？':'意味は？';
+    document.getElementById('quiz-question').textContent='問題：「'+k.name+'」の'+q;
+    // 正解
+    const correct=isUpper?k.sets:k.imi;
+    // ダミー選択肢：同じ基本名の助動詞も除外（なり断定・なり伝聞など）
+    const baseName=k.name.replace(/（[^）]*）/,'');
+    const others=KATAS.filter(x=>{
+      const xBase=x.name.replace(/（[^）]*）/,'');
+      return xBase!==baseName;
+    });
+    shuffle(others);
+    const candidates=isUpper
+      ? others.map(x=>x.sets)
+      : others.map(x=>x.imi);
+    // 正解と共通する単語を含むものを除外
+    const correctWords=correct.split(/[・・、\s]/);
+    const filtered=candidates.filter(c=>{
+      if(c===correct) return false;
+      const cWords=c.split(/[・・、\s]/);
+      // 共通する単語がないものだけ使う
+      return !correctWords.some(w=>w.length>1 && cWords.includes(w));
+    });
+    const unique=[...new Set(filtered)].slice(0,2);
+    while(unique.length<2) unique.push(isUpper?'体言接続':'比況・例示');
+    const choices=[correct,...unique];
+    shuffle(choices);
+    // ボタン生成
+    const choicesDiv=document.getElementById('quiz-choices');
+    choicesDiv.innerHTML='';
+    let answered=false;
+    choices.forEach(ch=>{
+      const btn=document.createElement('button');
+      btn.className='quiz-btn';
+      btn.textContent=ch;
+      btn.onclick=()=>{
+        if(answered) return;
+        answered=true;
+        const isCorrect=(ch===correct);
+        btn.classList.add(isCorrect?'correct':'wrong');
+        if(!isCorrect){
+          choicesDiv.querySelectorAll('.quiz-btn').forEach(b=>{
+            if(b.textContent===correct) b.classList.add('correct');
+          });
+        }
+        if(isCorrect){
+          score+=20; updateScoreUI();
+          document.getElementById('quiz-correct-flash').style.display='flex';
+          setTimeout(()=>{
+            document.getElementById('quiz-correct-flash').style.display='none';
+            ann.style.display='none';
+            callback();
+          },1200);
+        } else {
+          document.getElementById('quiz-wrong-answer').textContent='正解は「'+correct+'」';
+          document.getElementById('quiz-wrong-flash').style.display='flex';
+          setTimeout(()=>{
+            document.getElementById('quiz-wrong-flash').style.display='none';
+            ann.style.display='none';
+            callback();
+          },1400);
+        }
+      };
+      choicesDiv.appendChild(btn);
+    });
+  }
+}
+
+// ===== スポーン =====
+let currentRowKataIdx=-1;
+
+function spawnNext(){
+  if(!gameRunning) return;
+
+  // ゲームオーバー判定：最上段に石があったら
+  let topStone=false;
+  for(let c=0;c<COLS;c++) if(board[0][c]&&board[0][c].stone) topStone=true;
+  if(topStone){ doGameOver(); return; }
+
+  if(!queue.length){
+    if(clearedKatas>=10){ doAllClear(); return; }
+    // まだ5種終わっていないのにqueueが空→次の助動詞グループを追加
+    doAllClear(); return;
+  }
+
+  const p=queue.shift();
+
+  // 新しい助動詞ならアナウンス表示
+  if(p.kataIdx!==currentRowKataIdx){
+    queue.unshift(p);
+    currentRowKataIdx=p.kataIdx;
+    currentRow=ROWS-1;
+    for(let r=ROWS-1;r>=0;r--){
+      let full=true;
+      for(let c=0;c<COLS;c++) if(!board[r][c]) full=false;
+      if(!full){ currentRow=r; break; }
+    }
+    const k=KATAS[p.kataIdx];
+    document.getElementById('ji-name').textContent=k.name;
+    document.getElementById('ji-imi').textContent=k.imi;
+    document.getElementById('ji-sets').textContent=k.sets;
+    showAnnounce(k, ()=>{
+      setMsg('活用形を正しい列へ落とせ！');
+      setTimeout(spawnNext,300);
+    });
+    return;
+  }
+  // 同じ助動詞ならcurrentRowはそのまま
+
+  piece={...p, col:Math.floor(Math.random()*COLS), row:0};
+  const k=KATAS[p.kataIdx];
+
+  if(currentLevel===1){
+    const matchCols=[];
+    for(let c=0;c<6;c++){
+      if(p.isDash && k.correct[c]===null) matchCols.push(COL_NAMES[c]);
+      else if(!p.isDash && k.correct[c]===p.text) matchCols.push(COL_NAMES[c]);
+    }
+    setMsg('「'+p.text+'」→ '+matchCols.join('または')+'へ！');
+  } else {
+    setMsg('「'+p.text+'」をどこへ落とす?');
+  }
+  scheduleFall();
+}
+
+function scheduleFall(){
+  clearTimeout(fallTimer);
+  if(!gameRunning||!piece) return;
+  fallTimer=setTimeout(stepDown,FALL_SPD);
+}
+
+function stepDown(){
+  if(!piece||!gameRunning) return;
+  const nr=piece.row+1;
+  if(nr>=ROWS){ land(); return; }
+  if(nr>currentRow){ land(); return; }
+  piece.row=nr; scheduleFall();
+}
+
+function land(){
+  if(!piece) return;
+  clearTimeout(fallTimer);
+  const c=piece.col;
+  const r=currentRow;
+
+  // すでにそのマスが埋まっていたら→落としたパーツをキューに戻す
+  if(board[r][c]){
+    queue.unshift({text:piece.text,correctCol:piece.correctCol,kataIdx:piece.kataIdx,isDash:piece.isDash});
+    piece=null;
+    setMsg('そこは埋まっている！別の列へ');
+    setTimeout(spawnNext,400);
+    return;
+  }
+
+  // ゲームオーバー判定
+  if(currentRow===0 && !board[r][c]){
+    // row0に石が積まれたらゲームオーバー
+  }
+
+  // 正解判定
+  const k=KATAS[piece.kataIdx];
+  let ok=false;
+  if(piece.isDash) ok=(k.correct[c]===null);
+  else ok=(k.correct[c]===piece.text);
+
+  if(ok){
+    board[r][c]={text:piece.isDash?'—':piece.text,colIdx:c,correctCol:c,ok:true,stone:false,isDash:piece.isDash,kataIdx:piece.kataIdx};
+    score+=30; clearedPieces++; updateScoreUI();
+    const disp=piece.isDash?'○':'「'+piece.text+'」';
+    setMsg('正解　'+disp+'　＋三十点');
+    piece=null; draw();
+    setTimeout(()=>{
+      // 少し待ってからboard全体をスキャンして完成行を探す
+      let targetRow=-1;
+      for(let rr=ROWS-1;rr>=0;rr--){
+        let allOk=true;
+        for(let cc=0;cc<COLS;cc++){
+          if(!board[rr][cc]||!board[rr][cc].ok){ allOk=false; break; }
+        }
+        if(allOk){ targetRow=rr; break; }
+      }
+      if(targetRow!==-1){
+        checkRowClear(targetRow);
+      } else {
+        setTimeout(spawnNext,300);
+      }
+    },100);
+  } else {
+    score=Math.max(0,score-15); updateScoreUI();
+    setMsg('誤り　固められた…');
+    stonifyCurrentRow(r,piece.kataIdx);
+    comboCount=0; // ミスでコンボリセット
+    clearedKatas++; updateScoreUI(); // ミスでも1回カウント
+    // 同じ助動詞の残りパーツをスキップ
+    const missedKataIdx=currentRowKataIdx;
+    while(queue.length && queue[0].kataIdx===missedKataIdx) queue.shift();
+    currentRowKataIdx=-1;
+    piece=null; draw();
+    // 10種類終わったら皆伝
+    if(clearedKatas>=10){ setTimeout(doAllClear,1200); return; }
+    setTimeout(spawnNext,1200);
+  }
+}
+
+function checkRowClear(row){
+  score+=80; clearedKatas++; comboCount++; updateScoreUI();
+
+  if(comboCount>=2){
+    // ①まず石を1行消す
+    setMsg('🌸 一行消えた！　＋八十点　コンボ！石を1行消去！');
+    for(let r=0;r<ROWS;r++){
+      let hasStone=false;
+      for(let c=0;c<COLS;c++) if(board[r][c]&&board[r][c].stone) hasStone=true;
+      if(hasStone){
+        for(let rr=r;rr>0;rr--) for(let c=0;c<COLS;c++) board[rr][c]=board[rr-1][c];
+        for(let c=0;c<COLS;c++) board[0][c]=null;
+        break;
+      }
+    }
+    // ②石消去後にboard全体スキャンして完成行を探す
+    let targetRow=-1;
+    for(let r=ROWS-1;r>=0;r--){
+      let allOk=true;
+      for(let c=0;c<COLS;c++){
+        if(!board[r][c]||!board[r][c].ok){ allOk=false; break; }
+      }
+      if(allOk){ targetRow=r; break; }
+    }
+    if(targetRow===-1){ draw(); setTimeout(spawnNext,400); return; }
+    row=targetRow;
+  } else {
+    setMsg('🌸 一行消えた！　＋八十点');
+  }
+
+  // ③完成行をflashして消す
+  flashRow(row,()=>{
+    for(let r=row;r>0;r--) for(let c=0;c<COLS;c++) board[r][c]=board[r-1][c];
+    for(let c=0;c<COLS;c++) board[0][c]=null;
+    currentRow=Math.min(currentRow+1,ROWS-1);
+    draw();
+    if(!queue.length){ doAllClear(); return; }
+    setTimeout(spawnNext,400);
+  });
+}
+
+function flashRow(row,callback){
+  let count=0;
+  const interval=setInterval(()=>{
+    for(let c=0;c<COLS;c++) if(board[row][c]) board[row][c]._flash=(count%2===0);
+    count++;
+    if(count>=6){
+      clearInterval(interval);
+      for(let c=0;c<COLS;c++) if(board[row][c]) delete board[row][c]._flash;
+      callback();
+    }
+  },80);
+}
+
+function stonifyCurrentRow(row,kataIdx){
+  const k=KATAS[kataIdx];
+  for(let c=0;c<6;c++){
+    const ans=k.correct[c];
+    board[row][c]={text:ans!==null?ans:'—',colIdx:c,ok:false,stone:true,showAnswer:true,correctCol:c,kataIdx};
+  }
+}
+
+function doAllClear(){
+  gameRunning=false;
+  // queueが空でもclearedKatasが0なら皆伝にしない（バグ防止）
+  if(clearedKatas===0 && score===0){ startGame(); return; }
+  const msg=clearedKatas>=8?'素晴らしい！':clearedKatas>=5?'もう少し！':'もっと練習しよう！';
+  showOv('皆伝！',msg+'\n'+clearedKatas+'/10 助動詞クリア','最終得点　'+score+'点',startGame,'再び挑む',true);
+}
+
+function doGameOver(){
+  gameRunning=false; clearTimeout(fallTimer);
+  showOv('積み果てた','石が天井まで積み上がった','得点　'+score+'点',startGame,'再び挑む',true);
+}
+
+function moveL(){if(piece&&piece.col>0) piece.col--;}
+function moveR(){if(piece&&piece.col<COLS-1) piece.col++;}
+function hardDrop(){
+  if(!piece||!gameRunning) return;
+  clearTimeout(fallTimer);
+  piece.row=currentRow; land();
+}
+
+function drawLoop(){draw();requestAnimationFrame(drawLoop);}
+
+function draw(){
+  resize();
+  drawTatamiCanvas();
+  // 現在の行をハイライト
+  ctx.fillStyle='rgba(255,250,220,0.12)';
+  ctx.fillRect(0,currentRow*CHC,cv.width,CHC);
+  // 列境界
+  for(let c=1;c<COLS;c++){
+    ctx.strokeStyle='#3a5228';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(c*CW,0);ctx.lineTo(c*CW,cv.height);ctx.stroke();
+  }
+  // 行境界
+  for(let r=1;r<ROWS;r++){
+    ctx.strokeStyle='#3a5228';ctx.lineWidth=0.5;
+    ctx.beginPath();ctx.moveTo(0,r*CHC);ctx.lineTo(cv.width,r*CHC);ctx.stroke();
+  }
+  // 詰まりヒント
+  drawColumnHints();
+  // 盤面
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      const cell=board[r][c];if(!cell)continue;
+      if(cell._flash){ctx.fillStyle='rgba(255,255,200,0.85)';ctx.fillRect(c*CW,r*CHC,CW,CHC);}
+      else if(cell.isDash&&!cell.stone) drawDash(c,r);
+      else if(cell.stone) drawStone(c,r,cell);
+      else drawBlock(c,r,cell.text,COL_COLORS[c],cell.isDash);
+    }
+  }
+  // ゴースト＋ピース
+  if(piece){
+    const cc=(currentLevel>=2)?{bg:"#f5f0e8",border:"#8b6914",text:"#3a1020"}:COL_COLORS[piece.correctCol];
+    let gr=piece.row;
+    while(gr+1<=currentRow&&!board[gr+1]&&board[gr+1][piece.col]) gr++;
+    if(gr!==piece.row){ctx.globalAlpha=0.15;drawBlock(piece.col,gr,piece.text,cc,piece.isDash);ctx.globalAlpha=1;}
+    drawBlock(piece.col,piece.row,piece.text,cc,piece.isDash);
+  }
+  // ゲームオーバーライン
+  ctx.strokeStyle='#8b1a2a88';ctx.lineWidth=1.5;ctx.setLineDash([4,4]);
+  ctx.beginPath();ctx.moveTo(0,CHC);ctx.lineTo(cv.width,CHC);ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function drawTatamiCanvas(){
+  const tg=ctx.createLinearGradient(0,0,0,cv.height);
+  tg.addColorStop(0,'#5a7848');tg.addColorStop(1,'#3e5a30');
+  ctx.fillStyle=tg;ctx.fillRect(0,0,cv.width,cv.height);
+  ctx.strokeStyle='#6a8858';ctx.lineWidth=0.7;
+  for(let y=0;y<cv.height;y+=Math.max(4,CHC*0.12)){
+    ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cv.width,y);ctx.stroke();
+  }
+  ctx.strokeStyle='#507040';ctx.lineWidth=0.3;
+  for(let x=0;x<cv.width;x+=5){
+    ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,cv.height);ctx.stroke();
+  }
+}
+
+function drawColumnHints(){
+  if(currentLevel!==1) return;
+  for(let c=0;c<COLS;c++){
+    let empty=0;
+    for(let r=0;r<ROWS;r++) if(!board[r][c]) empty++;
+    if(empty<=2){
+      ctx.save();ctx.globalAlpha=Math.min(0.4,(3-empty)*0.15);
+      ctx.fillStyle='#fff8e8';
+      const fs=Math.min(CHC*0.4,CW*0.38,20);
+      ctx.font='900 '+fs+"px 'Yuji Syuku',serif";
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(COL_NAMES[c],c*CW+CW/2,cv.height/2);
+      ctx.restore();
+    }
+  }
+}
+
+function drawDash(c,r){
+  const x=c*CW+2,y=r*CHC+2,w=CW-4,h=CHC-4;
+  const og=ctx.createLinearGradient(x,y,x+w,y+h);
+  og.addColorStop(0,'#e8f4d8');og.addColorStop(1,'#c8e0b0');
+  ctx.fillStyle=og;rr(x,y,w,h,10);ctx.fill();
+  ctx.strokeStyle='#7a9a5a';ctx.lineWidth=1.2;rr(x,y,w,h,10);ctx.stroke();
+  ctx.fillStyle='#4a6a30aa';
+  const fs=Math.min(h*0.5,w*0.48,24);
+  ctx.font='700 '+fs+"px 'Yuji Syuku',serif";
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('—',x+w/2,y+h/2);
+}
+
+function drawBlock(c,r,text,cc,isDash){
+  if(currentLevel>=2&&!isDash) cc={bg:"#f5f0e8",border:"#8b6914",text:"#3a1020"};
+  const x=c*CW+2,y=r*CHC+2,w=CW-4,h=CHC-4;
+  if(isDash){
+    const og=ctx.createLinearGradient(x,y,x+w,y+h);
+    og.addColorStop(0,'#f0f8e8');og.addColorStop(1,'#d8e8c8');
+    ctx.fillStyle=og;rr(x,y,w,h,10);ctx.fill();
+    ctx.strokeStyle='#7a9a5a';ctx.lineWidth=1.5;rr(x,y,w,h,10);ctx.stroke();
+    ctx.strokeStyle='#ffffff88';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(x+6,y+2);ctx.lineTo(x+w-6,y+2);ctx.stroke();
+    ctx.fillStyle='#4a6a30';
+    const fs=Math.min(h*0.68,w*0.65,38);
+    ctx.font='900 '+fs+"px 'Yuji Syuku',serif";
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('○',x+w/2,y+h/2);
+  } else {
+    ctx.fillStyle=cc.bg;rr(x,y,w,h,5);ctx.fill();
+    ctx.strokeStyle=cc.border;ctx.lineWidth=1.5;rr(x,y,w,h,5);ctx.stroke();
+    ctx.fillStyle=cc.text;
+    // 文字数に応じてフォントサイズを調整
+    const len=text.length;
+    const fs=Math.min(h*0.68,w*0.65,38) * (len<=2?1:len===3?0.75:0.6);
+    ctx.font='900 '+fs+"px 'Yuji Syuku',serif";
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.strokeStyle=cc.text+'55';ctx.lineWidth=fs*0.06;ctx.lineJoin='round';
+    ctx.strokeText(text,x+w/2,y+h/2);
+    ctx.fillText(text,x+w/2,y+h/2);
+  }
+}
+
+function drawStone(c,r,cell){
+  const x=c*CW+2,y=r*CHC+2,w=CW-4,h=CHC-4;
+  const rockG=ctx.createLinearGradient(x,y,x+w,y+h);
+  rockG.addColorStop(0,'#d8d8cc');rockG.addColorStop(0.4,'#c0c0b4');rockG.addColorStop(1,'#b0b0a4');
+  ctx.fillStyle=rockG;rr(x,y,w,h,4);ctx.fill();
+  ctx.save();ctx.clip();
+  ctx.strokeStyle='#909088';ctx.lineWidth=1.2;
+  ctx.beginPath();ctx.moveTo(x+w*0.2,y);ctx.lineTo(x+w*0.28,y+h*0.4);ctx.lineTo(x+w*0.15,y+h);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x+w*0.65,y+h*0.1);ctx.lineTo(x+w*0.58,y+h*0.55);ctx.lineTo(x+w*0.7,y+h);ctx.stroke();
+  ctx.strokeStyle='#a0a098';ctx.lineWidth=0.5;
+  for(let i=-h;i<w+h;i+=6){ctx.beginPath();ctx.moveTo(x+i,y);ctx.lineTo(x+i+h,y+h);ctx.stroke();}
+  const hlG=ctx.createLinearGradient(x,y,x+w*0.6,y+h*0.6);
+  hlG.addColorStop(0,'rgba(255,255,255,0.3)');hlG.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=hlG;ctx.fillRect(x,y,w,h);
+  ctx.restore();
+  ctx.strokeStyle='#909088';ctx.lineWidth=1.5;rr(x,y,w,h,4);ctx.stroke();
+  if(cell.showAnswer){
+    ctx.fillStyle='#fff8ee';rr(x+2,y+2,w-4,h-4,3);ctx.fill();
+    ctx.strokeStyle='#c8a86a55';ctx.lineWidth=0.8;rr(x+2,y+2,w-4,h-4,3);ctx.stroke();
+    const len2=cell.text.length;
+    const fs=Math.min(h*0.64,w*0.62,36) * (len2<=2?1:len2===3?0.75:0.6);
+    ctx.font='900 '+fs+"px 'Yuji Syuku',serif";
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillStyle='#1a0000';
+    ctx.strokeStyle='#c8c8bc44';ctx.lineWidth=fs*0.06;ctx.lineJoin='round';
+    ctx.strokeText(cell.text,x+w/2,y+h/2+h*0.05);
+    ctx.fillText(cell.text,x+w/2,y+h/2+h*0.05);
+    ctx.font='700 '+Math.min(h*0.2,10)+"px 'Yuji Syuku',serif";
+    ctx.fillStyle='#5a5a50';ctx.strokeStyle='transparent';
+    ctx.fillText('正解',x+w/2,y+h*0.2);
+  } else {
+    ctx.fillStyle=STONE_C.text;
+    const len3=cell.text.length;
+    const fs=Math.min(h*0.64,w*0.62,36) * (len3<=2?1:len3===3?0.75:0.6);
+    ctx.font='900 '+fs+"px 'Yuji Syuku',serif";
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(cell.text,x+w/2,y+h/2);
+  }
+}
+
+function rr(x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);
+  ctx.closePath();
+}
+
+function showOv(t,s,sc,fn,bt,showBack){
+  document.getElementById('ov-t').textContent=t;
+  document.getElementById('ov-s').textContent=s;
+  document.getElementById('ov-sc').textContent=sc;
+  const b=document.getElementById('ov-btn');
+  b.textContent=bt;
+  b.onclick=()=>{hideTopUI(false);fn();};
+  const back=document.getElementById('ov-back');
+  if(showBack){back.style.display='block';back.onclick=()=>{hideTopUI(false);goToLevelSelect()};}
+  else back.style.display='none';
+  hideTopUI(true);
+  document.getElementById('overlay').classList.add('show');
+}
+
+function hideTopUI(hide){
+  ['joshi-info','score-row','msg','col-headers'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.visibility=hide?'hidden':'visible';
+  });
+  const h1=document.querySelector('#gc h1');
+  const sub=document.querySelector('#gc .sub');
+  if(h1) h1.style.visibility=hide?'hidden':'visible';
+  if(sub) sub.style.visibility=hide?'hidden':'visible';
+}
+
+function setMsg(t){document.getElementById('msg').textContent=t;}
+
+document.addEventListener('keydown',e=>{
+  if(!gameRunning) return;
+  if(e.key==='ArrowLeft'){e.preventDefault();moveL();}
+  else if(e.key==='ArrowRight'){e.preventDefault();moveR();}
+  else if(e.key==='ArrowDown'){e.preventDefault();if(piece){clearTimeout(fallTimer);stepDown();}}
+  else if(e.key===' '){e.preventDefault();hardDrop();}
+});
+
+let tx0=null;
+cv.addEventListener('touchstart',e=>{tx0=e.touches[0].clientX;},{passive:true});
+cv.addEventListener('touchend',e=>{
+  if(tx0===null)return;
+  const dx=e.changedTouches[0].clientX-tx0;
+  if(Math.abs(dx)>18){dx<0?moveL():moveR();}else hardDrop();
+  tx0=null;
+},{passive:true});
+
+window.addEventListener('resize',()=>{drawBg();resize();});
+drawBg();resize();startGame();
+</script>
+</body>
+</html>
